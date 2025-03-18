@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+#  user-service:
+#    image: openjdk:17-jdk-slim
+#    container_name: ${SPRING_APPLICATION_NAME}
+#    ports:
+#      - "${SERVER_PORT}:${SERVER_PORT}"
+#    env_file:
+#      - .env
+#    volumes:
+#      - ./target/${JAR_FILE}:/app/${JAR_FILE}
+#    restart: always
+#    working_dir: /app
+#    command: [ "java", "-jar", "${JAR_FILE}" ]
+#    depends_on:
+#      - event-db
+#      - event-redis
+#    networks:
+#      - ticket-box
+
+  user-db:
+    image: postgres:15.3
+    container_name: user-db
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
+      - POSTGRES_PASSWORD=${SPRING_DATASOURCE_PASSWORD}
+      - INIT
+    ports:
+      - "${DB_PORT}:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - ticket-box
+
+  user-redis:
+    image: redis:6.2-alpine
+    container_name: user-redis
+    ports:
+      - '${SPRING_REDIS_PORT}:${SPRING_REDIS_PORT}'
+    command: redis-server --save 20 1 --loglevel warning --port ${SPRING_REDIS_PORT}
+    volumes:
+      - redis_data:/data
+    networks:
+      - ticket-box
+
+volumes:
+  db_data:
+  redis_data:
+
+networks:
+  ticket-box:
+    external: true
+
